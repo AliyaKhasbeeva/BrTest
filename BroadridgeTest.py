@@ -1,28 +1,22 @@
-import datetime
-import os
+import datetime as dt
+from pathlib import Path
 from sys import argv
 
 
+def change_file(file_path):
+    with open(file_path, 'r', encoding='utf8') as in_file:
+        output_path = Path(file_path).with_suffix('.out')
+        with open(output_path, 'w', encoding='utf8') as out_file:
+            time_from = dt.datetime.strptime("18:00:00", "%H:%M:%S")
+            for row in in_file:
+                parts = row.split(" ", maxsplit=3)
+                msg_date = dt.datetime.strptime(parts[0], "%Y/%m/%d")
+                if msg_date.weekday() != 5 and msg_date.weekday() != 6:
+                    msg_time = dt.datetime.strptime(parts[1], "%H:%M:%S")
+                    if msg_time >= time_from:
+                        out_file.write(*parts[3:])
+
+
 script, path = argv
-
-dir_name = os.path.dirname(path)
-file_name = os.path.basename(path)
-out_file_name = os.path.splitext(file_name)[0]+".out"
-output_path = os.path.join(dir_name, out_file_name)
-
-in_file = open(path, 'r', encoding='utf8')
-out_file = open(output_path, 'w', encoding='utf8')
-file_rows = []
-time_from = datetime.datetime.strptime("18:00:00", "%H:%M:%S")
-time_to = datetime.datetime.strptime("23:59:59", "%H:%M:%S")
-for row in in_file:
-    parts = row.split()
-    file_rows.append(parts)
-for i in range(len(file_rows)):
-    msg_date = datetime.datetime.strptime(file_rows[i][0], "%Y/%m/%d")
-    if msg_date.weekday() != 5 and msg_date.weekday() != 6:
-        msg_time = datetime.datetime.strptime(file_rows[i][1], "%H:%M:%S")
-        if time_to >= msg_time >= time_from:
-            print(*file_rows[i][3:], file=out_file)
-in_file.close()
-out_file.close()
+if __name__ == '__main__':
+    change_file(path)
